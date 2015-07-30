@@ -1,4 +1,5 @@
 <?php
+
 //  Copyright (c) 2009 Facebook
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,13 +21,12 @@
  * @author(s)  Kannan Muthukkaruppan
  *             Changhao Jiang
  */
-
 // by default assume that xhprof_html & xhprof_lib directories
 // are at the same level.
 $GLOBALS['XHPROF_LIB_ROOT'] = dirname(__FILE__) . '/../xhprof_lib';
 
-require_once $GLOBALS['XHPROF_LIB_ROOT'].'/display/xhprof.php';
+require_once $GLOBALS['XHPROF_LIB_ROOT'] . '/display/xhprof.php';
 
 $xhprof_runs_impl = new XHProfRuns_Default();
 
-require_once $GLOBALS['XHPROF_LIB_ROOT'].'/display/typeahead_common.php';
+require_once $GLOBALS['XHPROF_LIB_ROOT'] . '/display/typeahead_common.php';
