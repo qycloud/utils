@@ -65,7 +65,7 @@ xhprof_enable(XHPROF_FLAGS_CPU | XHPROF_FLAGS_MEMORY);
 
 $GLOBALS['_PUT'] = []; //统一请求值 _GET，_POST, _PUT
 define('MONITOR_LIMIT', isset($monitorLimit) ? intval($monitorLimit) / 1000 : 0);
-
+ini_set('max_execution_time', 20);  //20秒还不能执行完的程序基本就是出问题了
 register_shutdown_function(function() {
     $data['SHUTDOWN_TIME'] = microtime(true);
     if (MONITOR_LIMIT > ($data['SHUTDOWN_TIME'] - $GLOBALS['_SERVER']['REQUEST_TIME_FLOAT'])) {
