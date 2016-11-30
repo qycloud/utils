@@ -16,7 +16,7 @@
  */
 
 //监控执行上限 /ms
-$monitorLimit = 1000;
+$monitorLimit = 200;
 
 /**
  * $monitorTimes 记录时间
@@ -32,13 +32,15 @@ $monitorTimes = [
 ];
 
 $sites = [
+'www.qycloud.com.cn',
+//'tools'
 //    'www.test.com',
 ];
 
 /**** running *******/
 $serverName = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : '';
 
-if (!in_array($serverName, $sites)) {
+if (false && !in_array($serverName, $sites)) {
     return;
 }
 
@@ -60,7 +62,8 @@ if (!$status) {
     return;
 }
 
-//monitoring
+//ini_set('max_execution_time', 60);
+//ini_set('memory_limit', '256m');
 xhprof_enable(XHPROF_FLAGS_CPU | XHPROF_FLAGS_MEMORY);
 
 $GLOBALS['_PUT'] = []; //统一请求值 _GET，_POST, _PUT
@@ -68,28 +71,40 @@ define('MONITOR_LIMIT', isset($monitorLimit) ? intval($monitorLimit) / 1000 : 0)
 ini_set('max_execution_time', 20);  //20秒还不能执行完的程序基本就是出问题了
 register_shutdown_function(function() {
     $data['SHUTDOWN_TIME'] = microtime(true);
-    if (MONITOR_LIMIT > ($data['SHUTDOWN_TIME'] - $GLOBALS['_SERVER']['REQUEST_TIME_FLOAT'])) {
+    $info = $GLOBALS['_SERVER'];
+
+    if (MONITOR_LIMIT > ($data['SHUTDOWN_TIME'] - $info['REQUEST_TIME_FLOAT'])) {
         return;
     }
 
-    $data['SERVER_NAME'] = $GLOBALS['_SERVER']['SERVER_NAME'];
-    $data['REQUEST_METHOD'] = $GLOBALS['_SERVER']['REQUEST_METHOD'];
-    $data['REQUEST_URI'] = $GLOBALS['_SERVER']['REQUEST_URI'];
-    $data['REDIRECT_STATUS'] = $GLOBALS['_SERVER']['REDIRECT_STATUS'];
-    $data['REQUEST_TIME'] = $GLOBALS['_SERVER']['REQUEST_TIME_FLOAT'];
-    $data['SHUTDOWN_TIME'] = microtime(true);
+    $data['SERVER_NAME']  = '';
+    if (isset($info['REQUEST_URI'])){
+        $data['SERVER_NAME'] = $info['SERVER_NAME'];
+        $data['REQUEST_METHOD'] = $info['REQUEST_METHOD'];
+        $data['REQUEST_URI'] = $info['REQUEST_URI'];
+        $data['REDIRECT_STATUS'] = $info['REDIRECT_STATUS'];
+        $data['REQUEST_TIME'] = $info['REQUEST_TIME_FLOAT'];
 
-    $data['_GET'] = $GLOBALS['_GET'];
-    $data['_POST'] = $GLOBALS['_POST'];
-    $data['_PUT'] = $GLOBALS['_PUT'];
-    $data['_COOKIE'] = isset($GLOBALS['_COOKIE']) ? $GLOBALS['_COOKIE'] : [];
-    $data['_SESSION'] = isset($GLOBALS['_SESSION']) ? $GLOBALS['_SESSION'] : [];
-    $data['_FILES'] = isset($GLOBALS['_FILES']) ? $GLOBALS['_FILES'] : [];
+        $data['_GET'] = $GLOBALS['_GET'];
+        $data['_POST'] = $GLOBALS['_POST'];
+        $data['_PUT'] = $GLOBALS['_PUT'];
+        $data['_COOKIE'] = isset($GLOBALS['_COOKIE']) ? $GLOBALS['_COOKIE'] : [];
+        $data['_SESSION'] = isset($GLOBALS['_SESSION']) ? $GLOBALS['_SESSION'] : [];
+        $data['_FILES'] = isset($GLOBALS['_FILES']) ? $GLOBALS['_FILES'] : [];
+    } else {
+        $data['REQUEST_METHOD'] = 'cli';
+        $data['REQUEST_URI'] = join('_', $info['argv']);
+    }
 
     $data['_XHPROF'] = xhprof_disable();
-
-    $fileName = ini_get("xhprof.output_dir") . '/' . uniqid() . '.' . $data['SERVER_NAME'] .
-            urldecode(str_replace(array('/', '?','&'), '_', $data['REQUEST_URI'])) . '.xhprof';
+    $uniqId = uniqid();
+    $param = preg_replace(
+                '/[^\w\_\-\[\]]+/', '_', $data['REQUEST_METHOD'] . '_' . $data['SERVER_NAME']
+                . '-' . urldecode($data['REQUEST_URI'])
+            );
+    $param = mb_substr($param, 0, 200);
+    $fileName = ini_get("xhprof.output_dir") . '/' .
+            $uniqId . '.' . $param. '.xhprof';
 
     file_put_contents($fileName, json_encode($data, JSON_UNESCAPED_UNICODE));
 });
