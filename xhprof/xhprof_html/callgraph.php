@@ -37,6 +37,7 @@ require_once $GLOBALS['XHPROF_LIB_ROOT'] . '/display/xhprof.php';
 
 ini_set('max_execution_time', 100);
 
+
 $params = array(// run id param
     'run' => array(XHPROF_STRING_PARAM, ''),
     // source/namespace/type of run
@@ -49,7 +50,7 @@ $params = array(// run id param
     // only functions whose exclusive time over the total time
     // is larger than this threshold will be shown.
     // default is 0.01.
-    'threshold' => array(XHPROF_FLOAT_PARAM, 0.01),
+    'threshold' => array(XHPROF_FLOAT_PARAM, 0.005),
     // whether to show critical_path
     'critical' => array(XHPROF_BOOL_PARAM, true),
     // first run in diff mode.
