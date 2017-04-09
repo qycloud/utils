@@ -16,7 +16,7 @@
  */
 
 //监控执行上限 /ms
-$monitorLimit = 200;
+$monitorLimit = 100;
 
 /**
  * $monitorTimes 记录时间
@@ -32,7 +32,6 @@ $monitorTimes = [
 ];
 
 $sites = [
-'www.qycloud.com.cn',
 //'tools'
 //    'www.test.com',
 ];
@@ -40,7 +39,7 @@ $sites = [
 /**** running *******/
 $serverName = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : '';
 
-if (false && !in_array($serverName, $sites)) {
+if (!in_array($serverName, $sites)) {
     return;
 }
 
@@ -62,8 +61,8 @@ if (!$status) {
     return;
 }
 
-//ini_set('max_execution_time', 60);
-//ini_set('memory_limit', '256m');
+ini_set('max_execution_time', 5);
+ini_set('memory_limit', '128m');
 xhprof_enable(XHPROF_FLAGS_CPU | XHPROF_FLAGS_MEMORY);
 
 $GLOBALS['_PUT'] = []; //统一请求值 _GET，_POST, _PUT
